@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Dispatcher implements Runnable{
     private static final Logger logger = LoggerFactory.getLogger(Dispatcher.class);
 
-    private static Integer maxSupportedAgents;
+    private static Integer maxSupportedCalls;
 
     private Boolean active;
 
@@ -26,25 +26,22 @@ public class Dispatcher implements Runnable{
     private CustomerDispatchStrategy callAttendStrategy;
 
 
-    public Dispatcher(Integer maxSupportedAgents){
-        Dispatcher.maxSupportedAgents = maxSupportedAgents;
+    public Dispatcher(Integer maxSupportedCalls){
+        Dispatcher.maxSupportedCalls = maxSupportedCalls;
         this.agents = new ConcurrentLinkedDeque<>();
         this.customersCalls = new ConcurrentLinkedDeque<>();
         this.callAttendStrategy = new DefaultCustomerDispatchStrategy();
-        this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Dispatcher.maxSupportedAgents);
-
+        this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Dispatcher.maxSupportedCalls);
         this.start();
     }
 
-    public Dispatcher(List<Agent> agents, Integer maxSupportedAgents) {
-        this(maxSupportedAgents);
-        Validate.notEmpty(agents);
-        Validate.notNull(agents);
-        Validate.notNull(callAttendStrategy);
-        this.agents = new ConcurrentLinkedDeque(agents);
-        this.customersCalls = new ConcurrentLinkedDeque<>();
-
-    }
+//    public Dispatcher(List<Agent> agents, Integer maxSupportedCalls) {
+//        this(maxSupportedCalls);
+//        Validate.notEmpty(agents);
+//        Validate.notNull(agents);
+//        this.agents = new ConcurrentLinkedDeque(agents);
+//
+//    }
 
     /**
      * Creates de Agent Object and adds it to Dispatcher Agents list.
@@ -156,6 +153,7 @@ public class Dispatcher implements Runnable{
                         this.customersCalls.addFirst(customer);
                     }
                 }else{
+                    logger.info("Not Available Agent Found");
 
                 }
             }

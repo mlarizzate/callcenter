@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -23,14 +24,19 @@ public class DispatcherTest {
 
     private static final int MAX_CALL_DURATION = 10;
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testDispatcherCreationWithEmptyEmployeesList() {
-        new Dispatcher(new ArrayList<>(), MAX_CONNECTIONS);
+    @Test
+    public void testDispatcherCreationWithoutAgents() {
+        Dispatcher dispatcher = new Dispatcher(MAX_CONNECTIONS);
+        assertEquals(String.valueOf(0),String.valueOf(dispatcher.getConnectedAgentsCount()));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testDispatcherCreationWithNullStrategy() {
-        new Dispatcher(new ArrayList<>(), null);
+    @Test
+    public void testDispatcherCreationAndRunning() {
+        Dispatcher dispatcher = new Dispatcher(MAX_CONNECTIONS);
+        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        threadPoolExecutor.execute(dispatcher);
+        assertEquals(true, dispatcher.getActive());
+        assertEquals(String.valueOf(1),String.valueOf(threadPoolExecutor.getActiveCount()));
     }
 
     @Test
