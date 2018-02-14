@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 public class Customer extends Thread{
+
     private Integer callDuration;
 
     /**

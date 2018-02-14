@@ -1,7 +1,10 @@
 package ar.com.exam.callcenter.model;
 
 public enum AgentType {
-    OPERATOR(1, "Operator"), SUPERVISOR(2, "Supervisor"), DIRECTOR(3, "Director");
+
+    OPERATOR(1, "Operator"),
+    SUPERVISOR(2, "Supervisor"), //Operator Boss
+    DIRECTOR(3, "Director"); // Supervisor Boss
 
     Integer priority;
     String description;

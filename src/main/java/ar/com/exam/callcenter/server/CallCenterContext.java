@@ -11,7 +11,8 @@ import java.util.concurrent.Executors;
 @Configuration
 public class CallCenterContext {
 
-    ExecutorService executorService;
+    private ExecutorService executorService;
+
     // inject via application.properties
     @Value("${max.calls}")
     private Integer maxCalls;

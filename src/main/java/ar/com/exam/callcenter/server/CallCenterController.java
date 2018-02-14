@@ -22,16 +22,27 @@ public class CallCenterController {
         this.dispatcher = dispatcher;
     }
 
+    /**
+     * Shows statistic on an easy way.
+     * @param model
+     * @return
+     */
     @RequestMapping("/status")
     public String status(Model model) {
         model.addAttribute("maxCalls", maxCalls);
-        model.addAttribute("connectedAgents", dispatcher.getAvailableAgentsCount());
+        model.addAttribute("connectedAgents", dispatcher.getConnectedAgentsCount());
         model.addAttribute("dispatchedCustomers", dispatcher.countDispatchedCustomersCount());
         model.addAttribute("pendingCustomers", dispatcher.getPendingPooledCustomersSize());
         model.addAttribute("activeCalls", dispatcher.getWorkingThreadsCount());
         return "status";
     }
 
+    /**
+     * Avoids Agents to connect on the platform
+     * @param agentType
+     * @param model
+     * @return
+     */
     @RequestMapping("/connect")
     public String connectAgent(@RequestParam("type") String agentType, Model model){
         dispatcher.connectAgent(AgentType.valueOf(agentType.toUpperCase()));
@@ -40,6 +51,11 @@ public class CallCenterController {
         return "genericMessage";
     }
 
+    /**
+     * Simulates customer calls
+     * @param model
+     * @return
+     */
     @RequestMapping("/simulateCustomer")
     public String simulateCustomer(Model model){
         Customer cu = Customer.createCustomerWithRamdomCallDuration(5,10);

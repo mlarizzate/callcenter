@@ -13,6 +13,7 @@ public abstract class Agent implements Runnable{
     private static final Logger logger = LoggerFactory.getLogger(Agent.class);
 
 
+
     private AgentStatus agentStatus;
 
     private ConcurrentLinkedDeque<Customer> incomingCalls;
@@ -25,7 +26,10 @@ public abstract class Agent implements Runnable{
         this.attendedCalls = new ConcurrentLinkedDeque<>();
     }
 
-
+    /**
+     * Gets the actual status of an Agent
+     * @return AgentStatus
+     */
     public synchronized AgentStatus getAgentStatus() {
         return agentStatus;
     }
@@ -35,12 +39,16 @@ public abstract class Agent implements Runnable{
         this.agentStatus = agentStatus;
     }
 
+    /**
+     * Gets a list of all Attended Customers at the moment.
+     * @return attendedCalls size
+     */
     public synchronized List<Customer> getAttendedCustomers() {
         return new ArrayList<>(attendedCalls);
     }
 
     /**
-     * Queues customers to be attended by the employee
+     * Queues customers to be attended by an Available Agent.
      *
      * @param customer customer thats calling
      */

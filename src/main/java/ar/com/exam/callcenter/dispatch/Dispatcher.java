@@ -25,6 +25,7 @@ public class Dispatcher implements Runnable{
 
     private CustomerDispatchStrategy callAttendStrategy;
 
+
     public Dispatcher(Integer maxSupportedAgents){
         Dispatcher.maxSupportedAgents = maxSupportedAgents;
         this.agents = new ConcurrentLinkedDeque<>();
@@ -46,7 +47,7 @@ public class Dispatcher implements Runnable{
     }
 
     /**
-     * Creates de Agent Object and starts its own thread.
+     * Creates de Agent Object and adds it to Dispatcher Agents list.
      * @param agentType is the type for the new connected agent
      * @return true if Dispatcher could add the new Agent correctly. false if not.
      */
@@ -63,18 +64,22 @@ public class Dispatcher implements Runnable{
                 case DIRECTOR:
                     agent = new DirectorAgent();
                     break;
-                default:throw new IllegalArgumentException("Unexpected AgentType Received");
+                default:
+                    throw new IllegalArgumentException("Unexpected AgentType Received");
             }
             agents.add(agent);
-            //this.executorService.execute(agent);
             logger.info("New Agent added Successfully. Role: " + agent.getAgentType());
             return true;
         }catch (Exception e){
             logger.error("Unexpected Error occurred when connecting agent");
             return false;
-
         }
     }
+
+    /**
+     * Receives the new Customer and saves de call to be delegated to an Agent,.
+     * @param customer represents a new call that is being received.
+     */
     public synchronized void dispatch(Customer customer) {
         logger.info("Dispatch new customer call of " + customer.getCallDuration() + " seconds");
         this.customersCalls.add(customer);
@@ -99,18 +104,34 @@ public class Dispatcher implements Runnable{
         return active;
     }
 
+    /**
+     * Gets the sum of all processed calls for all Agents.
+     * @return sum of all processed calls
+     */
     public Integer countDispatchedCustomersCount(){
         return this.agents.stream().mapToInt(agent -> agent.getAttendedCustomers().size()).sum();
     }
 
-    public Integer getAvailableAgentsCount(){
+    /**
+     * Gets the number of Connected Agents
+     * @return the size of the agents List.
+     */
+    public Integer getConnectedAgentsCount(){
         return agents.size();
     }
 
+    /**
+     * Gets the number of active Thread on the Agents threadPool
+     * @return active threads count
+     */
     public Integer getWorkingThreadsCount(){
         return threadPoolExecutor.getActiveCount();
     }
 
+    /**
+     * Gets the number of customers waiting for being dispatched.
+     * @return pooled customer calls
+     */
     public Integer getPendingPooledCustomersSize(){
         return customersCalls.size();
     }
