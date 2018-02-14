@@ -16,9 +16,9 @@ public class DefaultCustomerDispatchStrategy implements CustomerDispatchStrategy
     private static final Logger logger = LoggerFactory.getLogger(DefaultCustomerDispatchStrategy.class);
 
     @Override
-    public Agent findEmployee(Collection<Agent> agentList) {
+    public synchronized Agent findEmployee(Collection<Agent> agentList) {
         Validate.notNull(agentList);
-        List<Agent> availableAgents = agentList.stream().filter(agent -> agent.getAgentStatus() == AgentStatus.AVAILABLE).collect(Collectors.toList());
+        List<Agent> availableAgents = agentList.stream().filter(agent -> agent.getAgentStatus().equals(AgentStatus.AVAILABLE)).collect(Collectors.toList());
 
         Optional<Agent> availableAgentOptional = Optional.empty();
         if(!availableAgents.isEmpty()){

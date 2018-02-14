@@ -51,7 +51,7 @@ public class DispatcherTest {
 
     @Test
     public void testDispatchCallsToEmployees() throws InterruptedException {
-        List<AgentType> agentList = buildEmployeeList();
+        List<AgentType> agentList = buildAgentList();
         Dispatcher dispatcher = new Dispatcher(MAX_CONNECTIONS);
         agentList.forEach(agent -> dispatcher.connectAgent(agent));
         TimeUnit.SECONDS.sleep(1);
@@ -59,8 +59,8 @@ public class DispatcherTest {
         executorService.execute(dispatcher);
         TimeUnit.SECONDS.sleep(1);
 
-        buildCustomerList().forEach(call -> {
-            dispatcher.dispatch(call);
+        buildCustomerList().forEach(customer -> {
+            dispatcher.dispatch(customer);
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
@@ -69,13 +69,13 @@ public class DispatcherTest {
         });
 
         executorService.awaitTermination(MAX_CALL_DURATION * 2, TimeUnit.SECONDS);
-        Integer dispatchedCustomers = dispatcher.countDispatchedCustomers();
+        Integer dispatchedCustomers = dispatcher.countDispatchedCustomersCount();
         assertEquals(String.valueOf(CALLS_QTY), String.valueOf(dispatchedCustomers));
     }
 
 
 
-    private static List<AgentType> buildEmployeeList() {
+    private static List<AgentType> buildAgentList() {
         return Arrays.asList(AgentType.OPERATOR,
                              AgentType.OPERATOR,
                              AgentType.OPERATOR,

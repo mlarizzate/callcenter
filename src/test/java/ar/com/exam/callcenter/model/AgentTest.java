@@ -1,5 +1,6 @@
 package ar.com.exam.callcenter.model;
 
+import ar.com.exam.callcenter.exception.BusyAgentException;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -38,31 +39,44 @@ public class AgentTest {
     }
 
     @Test
-    public void testAgentAttendWhileAvailable() throws InterruptedException {
+    public void testAgentAttendWhileAvailable() throws InterruptedException,Exception {
         Agent operator = new OperatorAgent();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(operator);
-        operator.attend(Customer.createCustomerWithRamdomCallDuration(0, 1));
+        operator.delegateCustomer(Customer.createCustomerWithRamdomCallDuration(0, 1));
 
         executorService.awaitTermination(5, TimeUnit.SECONDS);
         assertEquals(1, operator.getAttendedCustomers().size());
     }
 
     @Test
-    public void testAgentStatesWhileAttend() throws InterruptedException {
+    public void testAgentStatesWhileAttend() throws Exception {
         Agent operator = new OperatorAgent();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        executorService.execute(operator);
         assertEquals(AgentStatus.AVAILABLE, operator.getAgentStatus());
         TimeUnit.SECONDS.sleep(1);
-        operator.attend(Customer.createCustomerWithRamdomCallDuration(2, 3));
-        operator.attend(Customer.createCustomerWithRamdomCallDuration(0, 1));
-        TimeUnit.SECONDS.sleep(1);
+        Customer customer = Customer.createCustomerWithRamdomCallDuration(2, 3);
+        operator.delegateCustomer(customer);
         assertEquals(AgentStatus.BUSY, operator.getAgentStatus());
+        executorService.execute(operator);
+        TimeUnit.SECONDS.sleep(customer.getCallDuration()+1);
+        assertEquals(AgentStatus.AVAILABLE, operator.getAgentStatus());
 
         executorService.awaitTermination(5, TimeUnit.SECONDS);
-        assertEquals(2, operator.getAttendedCustomers().size());
+        assertEquals(1, operator.getAttendedCustomers().size());
+    }
+
+    @Test(expected = BusyAgentException.class)
+    public void testTryesToAssignMoreThanOneCustomer() throws InterruptedException {
+        Agent operator = new OperatorAgent();
+        assertEquals(AgentStatus.AVAILABLE, operator.getAgentStatus());
+        TimeUnit.SECONDS.sleep(1);
+        Customer customer = Customer.createCustomerWithRamdomCallDuration(2, 3);
+        operator.delegateCustomer(customer);
+        assertEquals(AgentStatus.BUSY,operator.getAgentStatus());
+        operator.delegateCustomer(customer);
+
     }
 }

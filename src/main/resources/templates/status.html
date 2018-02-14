@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CallCenter</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Refresh" content="3"/>
+</head>
+<body>
+<p th:text="'Max Calls Supported: ' + ${maxCalls}" />
+<p th:text="'Connected Agents: ' + ${connectedAgents}" />
+<p th:text="'Dispatched Customers: ' + ${dispatchedCustomers}" />
+<p th:text="'Pending Customers: ' + ${pendingCustomers}" />
+<p th:text="'ActiveCalls: ' + ${activeCalls}" />
+
+</body>
+</html>

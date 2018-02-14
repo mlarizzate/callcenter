@@ -29,7 +29,7 @@ public class Customer extends Thread{
 
     /**
      * Creates a new Customer
-     *
+     *o matching bean found for vi
      * @param minDuration  Must be zero or higher. Seconds.
      * @param maxDuration Must be equal or higher than minDuration. Seconds
      * @return A new Customer.Its call duration will be randomly configured.

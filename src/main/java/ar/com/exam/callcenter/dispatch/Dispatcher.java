@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Dispatcher implements Runnable{
     private static final Logger logger = LoggerFactory.getLogger(Dispatcher.class);
@@ -17,7 +17,7 @@ public class Dispatcher implements Runnable{
 
     private Boolean active;
 
-    private ExecutorService executorService;
+    private ThreadPoolExecutor threadPoolExecutor;
 
     private ConcurrentLinkedDeque<Agent> agents;
 
@@ -30,7 +30,8 @@ public class Dispatcher implements Runnable{
         this.agents = new ConcurrentLinkedDeque<>();
         this.customersCalls = new ConcurrentLinkedDeque<>();
         this.callAttendStrategy = new DefaultCustomerDispatchStrategy();
-        this.executorService = Executors.newFixedThreadPool(maxSupportedAgents);
+        this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Dispatcher.maxSupportedAgents);
+
         this.start();
     }
 
@@ -65,7 +66,7 @@ public class Dispatcher implements Runnable{
                 default:throw new IllegalArgumentException("Unexpected AgentType Received");
             }
             agents.add(agent);
-            this.executorService.execute(agent);
+            //this.executorService.execute(agent);
             logger.info("New Agent added Successfully. Role: " + agent.getAgentType());
             return true;
         }catch (Exception e){
@@ -91,19 +92,27 @@ public class Dispatcher implements Runnable{
      */
     public synchronized void stop() {
         this.active = false;
-        this.executorService.shutdown();
+        this.threadPoolExecutor.shutdown();
     }
 
     public synchronized Boolean getActive() {
         return active;
     }
 
-    public Integer countDispatchedCustomers(){
+    public Integer countDispatchedCustomersCount(){
         return this.agents.stream().mapToInt(agent -> agent.getAttendedCustomers().size()).sum();
     }
 
-    public Integer getAvailableAgents(){
+    public Integer getAvailableAgentsCount(){
         return agents.size();
+    }
+
+    public Integer getWorkingThreadsCount(){
+        return threadPoolExecutor.getActiveCount();
+    }
+
+    public Integer getPendingPooledCustomersSize(){
+        return customersCalls.size();
     }
 
     /**
@@ -115,18 +124,22 @@ public class Dispatcher implements Runnable{
     public void run() {
         while (getActive()) {
             if (!this.agents.isEmpty() && !this.customersCalls.isEmpty()) {
-                Agent employee = this.callAttendStrategy.findEmployee(this.agents);
-                if (employee == null) {
-                    continue;
-                }
-                Customer call = this.customersCalls.poll();
-                try {
-                    employee.attend(call);
-                } catch (Exception e) {
-                    logger.error(e.getMessage());
-                    this.customersCalls.addFirst(call);
+                Agent agent = this.callAttendStrategy.findEmployee(this.agents);
+                if (agent != null) {
+                    Customer customer = this.customersCalls.poll();
+                    try {
+                        agent.delegateCustomer(customer);
+                        this.threadPoolExecutor.execute(agent);
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
+                        this.customersCalls.addFirst(customer);
+                    }
+                }else{
+
                 }
             }
         }
     }
+
+
 }

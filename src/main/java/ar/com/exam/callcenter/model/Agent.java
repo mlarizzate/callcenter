@@ -1,6 +1,6 @@
 package ar.com.exam.callcenter.model;
 
-import org.apache.commons.lang3.Validate;
+import ar.com.exam.callcenter.exception.BusyAgentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +44,14 @@ public abstract class Agent implements Runnable{
      *
      * @param customer customer thats calling
      */
-    public synchronized void attend(Customer customer) {
-        logger.info("Employee " + Thread.currentThread().getName() + " queues a call of " + customer.getCallDuration() + " seconds");
-        this.incomingCalls.add(customer);
+    public synchronized void delegateCustomer(Customer customer) throws BusyAgentException {
+        if(this.incomingCalls.isEmpty()){
+            this.setAgentStatus(AgentStatus.BUSY);
+            logger.info("Agent " + Thread.currentThread().getName() + " queues a call of " + customer.getCallDuration() + " seconds");
+            this.incomingCalls.add(customer);
+        }else{
+            throw new BusyAgentException();
+        }
     }
 
     /**
@@ -64,10 +69,8 @@ public abstract class Agent implements Runnable{
     @Override
     public void run() {
         logger.info("Employee " + Thread.currentThread().getName() + " starts to work");
-        while (true) {
-            if (!this.incomingCalls.isEmpty()) {
+        while (!this.incomingCalls.isEmpty()) {
                 Customer customer = this.incomingCalls.poll();
-                this.setAgentStatus(AgentStatus.BUSY);
                 logger.info("Agent " + Thread.currentThread().getName() + " receives a call of " + customer.getCallDuration() + " seconds");
                 try {
                     TimeUnit.SECONDS.sleep(customer.getCallDuration());
@@ -77,8 +80,7 @@ public abstract class Agent implements Runnable{
                     this.setAgentStatus(AgentStatus.AVAILABLE);
                 }
                 this.attendedCalls.add(customer);
-                logger.info("Agent " + Thread.currentThread().getName() + " finishes a customer call of " + customer.getCallDuration() + " seconds");
-            }
+                logger.info("Agent " + Thread.currentThread().getName() + " finished a customer call of " + customer.getCallDuration() + " seconds");
         }
     }
 }
