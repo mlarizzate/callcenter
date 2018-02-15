@@ -51,6 +51,13 @@ public class Dispatcher implements Runnable{
         this.start();
     }
 
+    /**
+     * Starts OnHoldIVR threads
+     *
+     * @param threadPoolExecutor the dispatcher threadpool. Its the same pool than other Agents Pool
+     * @param quantity quantity of IVRS to tart
+     * @param onHoldTimeSeconds time in secods that a Customer is OnHold
+     */
     private void runOnHoldIvrs(ThreadPoolExecutor threadPoolExecutor,final Integer quantity, Integer onHoldTimeSeconds){
         for (int i=0 ; i<quantity; i ++) {
             this.onHoldIVRList.add(new OnHoldIVR(this.customersCalls, onHoldTimeSeconds));
@@ -90,6 +97,11 @@ public class Dispatcher implements Runnable{
         }
     }
 
+    /**
+     * Receives the Customer calls and routes it to the CustomerCalls pool
+     * or rejects the call if the Dispatcer has not available threads for attend it.
+     * @param customer the new Customer call
+     */
     public synchronized void receiveCustomer(Customer customer){
         if(this.getWorkingThreadsCount()<maxSupportedCalls){
             this.dispatchCall(customer);
@@ -106,11 +118,20 @@ public class Dispatcher implements Runnable{
         this.customersCalls.add(customer);
     }
 
+    /**
+     * Rejects a Customer call
+     * @param customer Customer to be rejected
+     * @param rejectReason rejec reason
+     */
     private synchronized void rejects(Customer customer,RejectReason rejectReason){
         logger.info("Rejected Call");
         this.rejectedCustomers.put(customer,rejectReason);
     }
 
+    /**
+     * Lists the rejected customer calls
+     * @return a Map of rejected Customer with its reject reason.
+     */
     public Map<Customer, RejectReason> getRejectedCustomers(){
         return this.rejectedCustomers;
     }
