@@ -92,7 +92,7 @@ public class Dispatcher implements Runnable{
 
     public synchronized void receiveCustomer(Customer customer){
         if(this.getWorkingThreadsCount()<maxSupportedCalls){
-            this.dispatch(customer);
+            this.dispatchCall(customer);
         }else{
             this.rejects(customer, RejectReason.CENTRAL_OVERLOAD);
         }
@@ -101,7 +101,7 @@ public class Dispatcher implements Runnable{
      * Receives the new Customer and saves de call to be delegated to an Agent,.
      * @param customer represents a new call that is being received.
      */
-    public synchronized void dispatch(Customer customer) {
+    public synchronized void dispatchCall(Customer customer) {
         logger.info("Dispatch new customer call of " + customer.getCallDuration() + " seconds");
         this.customersCalls.add(customer);
     }

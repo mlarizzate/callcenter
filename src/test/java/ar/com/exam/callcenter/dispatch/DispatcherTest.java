@@ -93,7 +93,7 @@ public class DispatcherTest {
         TimeUnit.SECONDS.sleep(1);
 
         buildCustomerList().forEach(customer -> {
-            dispatcher.dispatch(customer);
+            dispatcher.dispatchCall(customer);
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
@@ -115,7 +115,7 @@ public class DispatcherTest {
         TimeUnit.SECONDS.sleep(1);
 
         buildCustomerList().forEach(customer -> {
-            dispatcher.dispatch(customer);
+            dispatcher.dispatchCall(customer);
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
