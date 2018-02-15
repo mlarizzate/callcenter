@@ -34,3 +34,6 @@ The project must be created with Maven.
 
 If necessary, attach a document with the explanation of how and why he resolved the extra points, or comment on the
 classes where their respective unit tests are located.
+
+##Documentation
+For Development documentations, go to "wiki" Section
