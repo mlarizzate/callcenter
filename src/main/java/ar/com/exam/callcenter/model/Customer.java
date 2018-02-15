@@ -6,11 +6,14 @@ import org.apache.commons.lang3.Validate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 public class Customer extends Thread{
 
     private Integer callDuration;
+
+    private AtomicInteger holdedTimes = new AtomicInteger(0);
 
     /**
      * Creates a new Customer. Its call duration will be received
@@ -24,6 +27,13 @@ public class Customer extends Thread{
         this.callDuration = callDuration;
     }
 
+    public Integer getHoldedTimes(){
+        return this.holdedTimes.get();
+    }
+
+    public void onHold(){
+        this.holdedTimes.incrementAndGet();
+    }
     public Integer getCallDuration() {
         return callDuration;
     }

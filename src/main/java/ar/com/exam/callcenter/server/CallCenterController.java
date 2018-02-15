@@ -24,8 +24,8 @@ public class CallCenterController {
 
     /**
      * Shows statistic on an easy way.
-     * @param model
-     * @return
+     * @param model variables to be shown on status page
+     * @return view name
      */
     @RequestMapping("/status")
     public String status(Model model) {
@@ -34,14 +34,16 @@ public class CallCenterController {
         model.addAttribute("dispatchedCustomers", dispatcher.countDispatchedCustomersCount());
         model.addAttribute("pendingCustomers", dispatcher.getPendingPooledCustomersSize());
         model.addAttribute("activeCalls", dispatcher.getWorkingThreadsCount());
+        model.addAttribute("rejectedCalls",dispatcher.countRejectedCustomerCallsCount());
+        model.addAttribute("rejectedCallsReasons", dispatcher.getRejectedCustomers());
         return "status";
     }
 
     /**
      * Avoids Agents to connect on the platform
-     * @param agentType
-     * @param model
-     * @return
+     * @param agentType The type of agent to be created
+     * @param model variables to be shown on status page
+     * @return view name
      */
     @RequestMapping("/connect")
     public String connectAgent(@RequestParam("type") String agentType, Model model){
@@ -53,13 +55,13 @@ public class CallCenterController {
 
     /**
      * Simulates customer calls
-     * @param model
-     * @return
+     * @param model variables to be shown on status page
+     * @return view name
      */
     @RequestMapping("/simulateCustomer")
     public String simulateCustomer(Model model){
         Customer cu = Customer.createCustomerWithRamdomCallDuration(5,10);
-        dispatcher.dispatch(cu);
+        dispatcher.receiveCustomer(cu);
         model.addAttribute("message", "SimulatedCall");
         return "genericMessage";
     }

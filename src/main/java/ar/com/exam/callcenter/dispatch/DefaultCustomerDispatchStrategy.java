@@ -3,6 +3,7 @@ package ar.com.exam.callcenter.dispatch;
 import ar.com.exam.callcenter.model.Agent;
 import ar.com.exam.callcenter.model.AgentType;
 import ar.com.exam.callcenter.model.AgentStatus;
+import ar.com.exam.callcenter.model.OnHoldIVR;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,5 +44,19 @@ public class DefaultCustomerDispatchStrategy implements CustomerDispatchStrategy
         }
         return availableAgentOptional.orElse(null);
 
+    }
+
+    @Override
+    public OnHoldIVR findOnHoldIvr(Collection<OnHoldIVR> onHoldIVRs) {
+        Validate.notNull(onHoldIVRs);
+        List<OnHoldIVR> availableOnHoldIVRs = onHoldIVRs.stream().filter(onHoldIVR -> onHoldIVR.getAgentStatus().equals(AgentStatus.AVAILABLE)).collect(Collectors.toList());
+
+        Optional<OnHoldIVR> availableOnHoldIVROptional = Optional.empty();
+
+        if(!availableOnHoldIVRs.isEmpty()){
+            logger.info("Available OnHoldIVRs: " + availableOnHoldIVRs.size());
+            availableOnHoldIVROptional = availableOnHoldIVRs.stream().findFirst();
+        }
+        return availableOnHoldIVROptional.orElse(null);
     }
 }

@@ -1,11 +1,12 @@
 package ar.com.exam.callcenter.dispatch;
 
+import ar.com.exam.callcenter.exception.MoreIVRsThanSupportedCallsConfigured;
 import ar.com.exam.callcenter.model.*;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -14,6 +15,7 @@ public class Dispatcher implements Runnable{
     private static final Logger logger = LoggerFactory.getLogger(Dispatcher.class);
 
     private static Integer maxSupportedCalls;
+    private Integer maxHoldedTimes;
 
     private Boolean active;
 
@@ -23,25 +25,40 @@ public class Dispatcher implements Runnable{
 
     private ConcurrentLinkedDeque<Customer> customersCalls;
 
+    private Map<Customer, RejectReason> rejectedCustomers;
+
     private CustomerDispatchStrategy callAttendStrategy;
 
+    private ConcurrentLinkedDeque<OnHoldIVR> onHoldIVRList;
+    //private OnHoldIVR onHoldIVR;
 
-    public Dispatcher(Integer maxSupportedCalls){
+
+
+    public Dispatcher(Integer maxSupportedCalls, Integer maxHoldedTimes, Integer onHoldIVRs, Integer onHoldTimeSeconds){
+        if(onHoldIVRs > maxSupportedCalls){
+            throw new MoreIVRsThanSupportedCallsConfigured();
+        }
+
         Dispatcher.maxSupportedCalls = maxSupportedCalls;
+        rejectedCustomers = new HashMap<>();
         this.agents = new ConcurrentLinkedDeque<>();
+        this.onHoldIVRList = new ConcurrentLinkedDeque<>();
         this.customersCalls = new ConcurrentLinkedDeque<>();
+        this.maxHoldedTimes = maxHoldedTimes;
         this.callAttendStrategy = new DefaultCustomerDispatchStrategy();
         this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Dispatcher.maxSupportedCalls);
+        this.runOnHoldIvrs(this.threadPoolExecutor,onHoldIVRs, onHoldTimeSeconds);
         this.start();
     }
 
-//    public Dispatcher(List<Agent> agents, Integer maxSupportedCalls) {
-//        this(maxSupportedCalls);
-//        Validate.notEmpty(agents);
-//        Validate.notNull(agents);
-//        this.agents = new ConcurrentLinkedDeque(agents);
-//
-//    }
+    private void runOnHoldIvrs(ThreadPoolExecutor threadPoolExecutor,final Integer quantity, Integer onHoldTimeSeconds){
+        for (int i=0 ; i<quantity; i ++) {
+            this.onHoldIVRList.add(new OnHoldIVR(this.customersCalls, onHoldTimeSeconds));
+        }
+        onHoldIVRList.forEach(onHoldIVR -> threadPoolExecutor.execute(onHoldIVR));
+
+    }
+
 
     /**
      * Creates de Agent Object and adds it to Dispatcher Agents list.
@@ -73,6 +90,13 @@ public class Dispatcher implements Runnable{
         }
     }
 
+    public synchronized void receiveCustomer(Customer customer){
+        if(this.getWorkingThreadsCount()<maxSupportedCalls){
+            this.dispatch(customer);
+        }else{
+            this.rejects(customer, RejectReason.CENTRAL_OVERLOAD);
+        }
+    }
     /**
      * Receives the new Customer and saves de call to be delegated to an Agent,.
      * @param customer represents a new call that is being received.
@@ -80,6 +104,15 @@ public class Dispatcher implements Runnable{
     public synchronized void dispatch(Customer customer) {
         logger.info("Dispatch new customer call of " + customer.getCallDuration() + " seconds");
         this.customersCalls.add(customer);
+    }
+
+    private synchronized void rejects(Customer customer,RejectReason rejectReason){
+        logger.info("Rejected Call");
+        this.rejectedCustomers.put(customer,rejectReason);
+    }
+
+    public Map<Customer, RejectReason> getRejectedCustomers(){
+        return this.rejectedCustomers;
     }
 
     /**
@@ -99,6 +132,12 @@ public class Dispatcher implements Runnable{
 
     public synchronized Boolean getActive() {
         return active;
+    }
+    /**
+     * Gets the sum of all rejected calls
+     */
+    public Integer countRejectedCustomerCallsCount(){
+        return this.rejectedCustomers.size();
     }
 
     /**
@@ -141,10 +180,10 @@ public class Dispatcher implements Runnable{
     @Override
     public void run() {
         while (getActive()) {
-            if (!this.agents.isEmpty() && !this.customersCalls.isEmpty()) {
+            if (!this.customersCalls.isEmpty()) {
                 Agent agent = this.callAttendStrategy.findEmployee(this.agents);
+                Customer customer = this.customersCalls.poll();
                 if (agent != null) {
-                    Customer customer = this.customersCalls.poll();
                     try {
                         agent.delegateCustomer(customer);
                         this.threadPoolExecutor.execute(agent);
@@ -153,9 +192,16 @@ public class Dispatcher implements Runnable{
                         this.customersCalls.addFirst(customer);
                     }
                 }else{
-                    logger.info("Not Available Agent Found");
 
+                    logger.info("Not Available Agent Found");
+                    OnHoldIVR onHoldIVR = this.callAttendStrategy.findOnHoldIvr(this.onHoldIVRList);
+                    if(onHoldIVR != null && customer.getHoldedTimes() < maxHoldedTimes){
+                        onHoldIVR.addToHoldQueue(customer);
+                    }else{
+                        this.rejects(customer, RejectReason.UNAVAILABLE_AGENTS);
+                    }
                 }
+
             }
         }
     }

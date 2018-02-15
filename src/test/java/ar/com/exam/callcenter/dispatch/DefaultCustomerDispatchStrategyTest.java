@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class DefaultCustomerDispatchStrategyTest {
     private CustomerDispatchStrategy callAttendStrategy;
@@ -67,6 +68,33 @@ public class DefaultCustomerDispatchStrategyTest {
         Agent employee = this.callAttendStrategy.findEmployee(employeeList);
 
         assertNull(employee);
+    }
+
+    @Test
+    public void testFindOnHoldIVR(){
+        final Integer onHoldTimeSeconds = 5;
+        OnHoldIVR listedIvr = new OnHoldIVR(new ConcurrentLinkedDeque<>(), onHoldTimeSeconds);
+        ConcurrentLinkedDeque<OnHoldIVR> onHoldIVRList = new ConcurrentLinkedDeque<>();
+        onHoldIVRList.add(listedIvr);
+
+        OnHoldIVR ivr = this.callAttendStrategy.findOnHoldIvr(onHoldIVRList);
+        assertNotNull(ivr);
+    }
+
+    @Test
+    public void testUnavailableOnHoldIVR(){
+        ConcurrentLinkedDeque<OnHoldIVR> onHoldIVRList = new ConcurrentLinkedDeque<>();
+        onHoldIVRList.add(mockBusyIvr());
+
+        OnHoldIVR ivr = this.callAttendStrategy.findOnHoldIvr(onHoldIVRList);
+        assertNull(ivr);
+    }
+
+    private static OnHoldIVR mockBusyIvr(){
+        OnHoldIVR ivr = mock(OnHoldIVR.class);
+        when(ivr.getAgentType()).thenReturn(AgentType.IVR);
+        when(ivr.getAgentStatus()).thenReturn(AgentStatus.BUSY);
+        return ivr;
     }
 
     private static Agent mockBusyEmployee(AgentType agentType) {

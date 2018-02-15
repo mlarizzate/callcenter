@@ -11,6 +11,17 @@
 <p th:text="'Dispatched Customers: ' + ${dispatchedCustomers}" />
 <p th:text="'Pending Customers: ' + ${pendingCustomers}" />
 <p th:text="'ActiveCalls: ' + ${activeCalls}" />
+<p th:text="'RejectedCalls: ' + ${rejectedCalls}" />
+
+<table>
+    <th:block th:each="rejectReason : ${rejectedCallsReasons}">
+        <tr>
+            <td th:text="${rejectReason.value}"/>
+        </tr>
+    </th:block>
+</table>
+
+
 
 </body>
 </html>

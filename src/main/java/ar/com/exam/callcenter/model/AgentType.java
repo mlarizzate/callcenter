@@ -4,7 +4,8 @@ public enum AgentType {
 
     OPERATOR(1, "Operator"),
     SUPERVISOR(2, "Supervisor"), //Operator Boss
-    DIRECTOR(3, "Director"); // Supervisor Boss
+    DIRECTOR(3, "Director"), // Supervisor Boss
+    IVR(10, "IVR"); // IVR
 
     Integer priority;
     String description;

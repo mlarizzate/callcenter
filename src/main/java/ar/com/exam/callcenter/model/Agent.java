@@ -12,13 +12,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class Agent implements Runnable{
     private static final Logger logger = LoggerFactory.getLogger(Agent.class);
 
-
-
     private AgentStatus agentStatus;
 
-    private ConcurrentLinkedDeque<Customer> incomingCalls;
+    protected ConcurrentLinkedDeque<Customer> incomingCalls;
 
-    private ConcurrentLinkedDeque<Customer> attendedCalls;
+    protected ConcurrentLinkedDeque<Customer> attendedCalls;
 
     public Agent() {
         this.agentStatus = AgentStatus.AVAILABLE;
@@ -34,7 +32,7 @@ public abstract class Agent implements Runnable{
         return agentStatus;
     }
 
-    private synchronized void setAgentStatus(AgentStatus agentStatus) {
+    protected synchronized void setAgentStatus(AgentStatus agentStatus) {
         logger.info("Agent " + Thread.currentThread().getName() + " changes its state to " + agentStatus);
         this.agentStatus = agentStatus;
     }
@@ -76,7 +74,7 @@ public abstract class Agent implements Runnable{
      */
     @Override
     public void run() {
-        logger.info("Employee " + Thread.currentThread().getName() + " starts to work");
+        logger.info("Agent " + Thread.currentThread().getName() + " starts to work");
         while (!this.incomingCalls.isEmpty()) {
                 Customer customer = this.incomingCalls.poll();
                 logger.info("Agent " + Thread.currentThread().getName() + " receives a call of " + customer.getCallDuration() + " seconds");
