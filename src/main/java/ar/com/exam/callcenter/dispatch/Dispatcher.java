@@ -73,7 +73,6 @@ public class Dispatcher implements Runnable{
      * @return true if Dispatcher could add the new Agent correctly. false if not.
      */
     public Boolean connectAgent(AgentType agentType){
-        try {
             Agent agent;
             switch (agentType){
                 case OPERATOR:
@@ -86,15 +85,12 @@ public class Dispatcher implements Runnable{
                     agent = new DirectorAgent();
                     break;
                 default:
-                    throw new IllegalArgumentException("Unexpected AgentType Received");
+                    logger.error("Invalid AgentType."); //This is only for bestPractices purposes. The code is comparing an enum.
+                    return false;
             }
             agents.add(agent);
             logger.info("New Agent added Successfully. Role: " + agent.getAgentType());
             return true;
-        }catch (Exception e){
-            logger.error("Unexpected Error occurred when connecting agent");
-            return false;
-        }
     }
 
     /**
