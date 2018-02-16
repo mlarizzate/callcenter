@@ -47,7 +47,7 @@ public class DefaultCustomerDispatchStrategy implements CustomerDispatchStrategy
     }
 
     @Override
-    public OnHoldIVR findOnHoldIvr(Collection<OnHoldIVR> onHoldIVRs) {
+    public synchronized OnHoldIVR findOnHoldIvr(Collection<OnHoldIVR> onHoldIVRs) {
         Validate.notNull(onHoldIVRs);
         List<OnHoldIVR> availableOnHoldIVRs = onHoldIVRs.stream().filter(onHoldIVR -> onHoldIVR.getAgentStatus().equals(AgentStatus.AVAILABLE)).collect(Collectors.toList());
 

@@ -28,11 +28,11 @@ public abstract class Agent implements Runnable{
      * Gets the actual status of an Agent
      * @return AgentStatus
      */
-    public synchronized AgentStatus getAgentStatus() {
+    public AgentStatus getAgentStatus() {
         return agentStatus;
     }
 
-    protected synchronized void setAgentStatus(AgentStatus agentStatus) {
+    protected void setAgentStatus(AgentStatus agentStatus) {
         logger.info("Agent " + Thread.currentThread().getName() + " changes its state to " + agentStatus);
         this.agentStatus = agentStatus;
     }
@@ -41,7 +41,7 @@ public abstract class Agent implements Runnable{
      * Gets a list of all Attended Customers at the moment.
      * @return attendedCalls size
      */
-    public synchronized List<Customer> getAttendedCustomers() {
+    public List<Customer> getAttendedCustomers() {
         return new ArrayList<>(attendedCalls);
     }
 
@@ -50,7 +50,7 @@ public abstract class Agent implements Runnable{
      *
      * @param customer customer thats calling
      */
-    public synchronized void delegateCustomer(Customer customer) throws BusyAgentException {
+    public void delegateCustomer(Customer customer) throws BusyAgentException {
         if(this.incomingCalls.isEmpty()){
             this.setAgentStatus(AgentStatus.BUSY);
             logger.info("Agent " + Thread.currentThread().getName() + " queues a call of " + customer.getCallDuration() + " seconds");

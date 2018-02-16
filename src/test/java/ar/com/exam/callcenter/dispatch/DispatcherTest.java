@@ -123,7 +123,7 @@ public class DispatcherTest {
             }
         });
 
-        executorService.awaitTermination(MAX_CALL_DURATION * 2, TimeUnit.SECONDS);
+        executorService.awaitTermination(MAX_CALL_DURATION * 3, TimeUnit.SECONDS);
         assertEquals(String.valueOf(CALLS_QTY), String.valueOf(dispatcher.getRejectedCustomers().size()));
     }
 

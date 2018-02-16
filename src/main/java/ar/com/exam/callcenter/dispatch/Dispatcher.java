@@ -72,7 +72,7 @@ public class Dispatcher implements Runnable{
      * @param agentType is the type for the new connected agent
      * @return true if Dispatcher could add the new Agent correctly. false if not.
      */
-    public synchronized Boolean connectAgent(AgentType agentType){
+    public Boolean connectAgent(AgentType agentType){
         try {
             Agent agent;
             switch (agentType){
@@ -102,7 +102,7 @@ public class Dispatcher implements Runnable{
      * or rejects the call if the Dispatcer has not available threads for attend it.
      * @param customer the new Customer call
      */
-    public synchronized void receiveCustomer(Customer customer){
+    public void receiveCustomer(Customer customer){
         if(this.getWorkingThreadsCount()<maxSupportedCalls){
             this.dispatchCall(customer);
         }else{
@@ -113,7 +113,7 @@ public class Dispatcher implements Runnable{
      * Receives the new Customer and saves de call to be delegated to an Agent,.
      * @param customer represents a new call that is being received.
      */
-    public synchronized void dispatchCall(Customer customer) {
+    public void dispatchCall(Customer customer) {
         logger.info("Dispatch new customer call of " + customer.getCallDuration() + " seconds");
         this.customersCalls.add(customer);
     }
@@ -123,7 +123,7 @@ public class Dispatcher implements Runnable{
      * @param customer Customer to be rejected
      * @param rejectReason rejec reason
      */
-    private synchronized void rejects(Customer customer,RejectReason rejectReason){
+    private void rejects(Customer customer,RejectReason rejectReason){
         logger.info("Rejected Call");
         this.rejectedCustomers.put(customer,rejectReason);
     }
@@ -139,19 +139,19 @@ public class Dispatcher implements Runnable{
     /**
      * Allows the dispatcher run method to execute
      */
-    public synchronized void start() {
+    public void start() {
         this.active = true;
     }
 
     /**
      * Stops the Agent threads and the dispatcher run method immediately
      */
-    public synchronized void stop() {
+    public void stop() {
         this.active = false;
         this.threadPoolExecutor.shutdown();
     }
 
-    public synchronized Boolean getActive() {
+    public Boolean getActive() {
         return active;
     }
     /**
