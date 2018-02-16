@@ -1,7 +1,6 @@
 package ar.com.exam.callcenter.server;
 
 import ar.com.exam.callcenter.dispatch.Dispatcher;
-import ar.com.exam.callcenter.exception.MoreIVRsThanSupportedCallsConfigured;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +23,8 @@ public class CallCenterContext {
     @Value("${onhold.ivrs}")
     private Integer onHoldIvrs;
 
-    @Value("onhold.ivr.time")
-    private Integer onHoldTimeSeconds;
+    @Value("${onhold.ivr.time}")
+    private Integer onHoldIvrTime;
 
     public CallCenterContext() {
         executorService = Executors.newSingleThreadExecutor();
@@ -43,7 +42,7 @@ public class CallCenterContext {
 
     @Bean
     public Dispatcher getDispatcher(){
-        Dispatcher dispatcher = new Dispatcher(this.maxCalls, this.maxHoldedTimes,onHoldIvrs, onHoldTimeSeconds);
+        Dispatcher dispatcher = new Dispatcher(this.maxCalls, this.maxHoldedTimes,onHoldIvrs, onHoldIvrTime);
         executorService.execute(dispatcher);
         return dispatcher;
     }

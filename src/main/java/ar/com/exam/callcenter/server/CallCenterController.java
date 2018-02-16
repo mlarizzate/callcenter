@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -27,7 +28,7 @@ public class CallCenterController {
      * @param model variables to be shown on status page
      * @return view name
      */
-    @RequestMapping("/status")
+    @RequestMapping(method = RequestMethod.GET, value = "/status")
     public String status(Model model) {
         model.addAttribute("maxCalls", maxCalls);
         model.addAttribute("connectedAgents", dispatcher.getConnectedAgentsCount());
@@ -45,9 +46,13 @@ public class CallCenterController {
      * @param model variables to be shown on status page
      * @return view name
      */
-    @RequestMapping("/connect")
+    @RequestMapping(method = RequestMethod.GET, value ="/connect")
     public String connectAgent(@RequestParam("type") String agentType, Model model){
-        dispatcher.connectAgent(AgentType.valueOf(agentType.toUpperCase()));
+        try{
+            dispatcher.connectAgent(AgentType.valueOf(agentType.toUpperCase()));
+        }catch (IllegalArgumentException e){
+
+        }
 
         model.addAttribute("message", "Agent Successfully Connected");
         return "genericMessage";
@@ -58,7 +63,7 @@ public class CallCenterController {
      * @param model variables to be shown on status page
      * @return view name
      */
-    @RequestMapping("/simulateCustomer")
+    @RequestMapping(method = RequestMethod.GET, value ="/simulateCustomer")
     public String simulateCustomer(Model model){
         Customer cu = Customer.createCustomerWithRamdomCallDuration(5,10);
         dispatcher.receiveCustomer(cu);
